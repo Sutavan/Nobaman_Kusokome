@@ -103,15 +103,15 @@
       <button id="unsubscribe-button" onclick="unsubscribe()" style="margin-top: 8px; padding: 6px 12px; font-size: 14px; border: none; background: red; color: white; border-radius: 5px; cursor: pointer;">登録解除</button>
     </div>
     <div id="warning" style="position: absolute; top: 40px; left: 50%; transform: translateX(-50%); font-size: 28px; color: red; font-weight: bold; display: none;">登録解除しろ！</div>
-    <div class="text-block">
+    <div class="text-block" onclick="document.getElementById('input').focus()" style="cursor: text;">
       <p id="kanji"></p>
       <div id="typed-area"></div>
-      <input type="text" id="input" oninput="checkInput()" style="border: none; background: none; color: transparent; caret-color: white; font-size: 1px;" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+      <div style="margin-top: 12px; background: rgba(255,255,255,0.1); padding: 10px; border-radius: 4px; display: inline-block;"><input type="text" id="input" oninput="checkInput()" style="border: none; background: none; color: transparent; caret-color: white; font-size: 1px;" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" /></div>
     </div>
   </div>
 
   <div id="result-screen">
-    <div class="text-block">
+    <div class="text-block" onclick="document.getElementById('input').focus()" style="cursor: text;">
       <div id="result-text"></div>
       <div id="result-rank"></div>
       <button id="back-button" onclick="goToTitle()">タイトルへ戻る</button>
@@ -157,6 +157,7 @@
         if (subscriberCount >= 501000) {
           clearInterval(subscriberInterval);
           showGameOver();
+          return;
         }
       }, 1000);
     }
