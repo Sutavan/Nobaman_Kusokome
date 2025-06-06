@@ -65,6 +65,7 @@
     #kanji {
       font-size: 28px;
       font-weight: bold;
+      margin-top: 20px;
     }
     #typed-area {
       margin-top: 20px;
@@ -105,6 +106,7 @@
     <div id="warning" style="position: absolute; top: 40px; left: 50%; transform: translateX(-50%); font-size: 28px; color: red; font-weight: bold; display: none;">登録解除しろ！</div>
     <div class="text-block" onclick="document.getElementById('input').focus()" style="cursor: text;">
       <p id="kanji"></p>
+      <img id="typing-character" src="typing_character.png" style="width: 120px; display: none; margin: 16px auto; display: block;" />
       <div id="typed-area"></div>
       <div style="margin-top: 12px; background: rgba(0,255,0,0.1); padding: 10px; border-radius: 4px; display: inline-block;"><input type="text" id="input" oninput="checkInput()" style="border: none; background: none; color: transparent; caret-color: white; font-size: 1px;" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" /></div>
     </div>
@@ -141,6 +143,7 @@
     });
 
     function startGame() {
+      document.getElementById('typing-character').style.display = 'block';
       index = 0; correct = 0; total = 0; charCorrect = 0; charTotal = 0;
       document.getElementById('start-button').style.display = 'none';
       document.getElementById('logo').style.display = 'none';
@@ -208,6 +211,7 @@
     }
 
     function showResult() {
+      document.getElementById('typing-character').style.display = 'none';
       clearTimeout(gameTimer);
       clearInterval(subscriberInterval);
       document.getElementById('game-screen').style.display = 'none';
@@ -219,6 +223,7 @@
     }
 
     function showGameOver() {
+      document.getElementById('typing-character').style.display = 'none';
       clearTimeout(gameTimer);
       clearInterval(subscriberInterval);
       document.getElementById('game-screen').style.display = 'none';
