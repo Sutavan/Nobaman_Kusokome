@@ -13,20 +13,27 @@
       font-family: sans-serif;
       color: white;
     }
-    video {
-      width: 100vw;
-      height: 100vh;
-      object-fit: cover;
-      z-index: -1;
+    #background-video-wrapper {
       position: fixed;
-      top: 0;
-      left: 0;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 60vw;
+      height: auto;
+      opacity: 0.4;
+      z-index: -1;
+    }
+    video {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
     }
     #logo {
       position: absolute;
       bottom: 80px;
       right: 20px;
       width: 180px;
+      z-index: 1;
     }
     #start-button {
       position: absolute;
@@ -39,6 +46,7 @@
       border: none;
       cursor: pointer;
       border-radius: 8px;
+      z-index: 1;
     }
     #start-button:hover {
       background-color: #ccc;
@@ -50,10 +58,11 @@
       left: 0;
       width: 100vw;
       height: 100vh;
-      background-color: black;
+      background-color: rgba(0, 0, 0, 0.6);
       color: white;
       padding: 20px;
       box-sizing: border-box;
+      z-index: 1;
     }
     .text-block {
       text-align: center;
@@ -83,10 +92,12 @@
   </style>
 </head>
 <body>
-  <video autoplay loop muted>
-    <source src="トプ画絵.mp4" type="video/mp4">
-    お使いのブラウザは動画タグに対応していません。
-  </video>
+  <div id="background-video-wrapper">
+    <video autoplay loop muted>
+      <source src="トプ画絵_軽量版.mp4" type="video/mp4">
+      お使いのブラウザは動画タグに対応していません。
+    </video>
+  </div>
   <img id="logo" src="のばまんロゴ.jpg" alt="のばまんロゴ">
   <button id="start-button" onclick="startGame()">視聴開始</button>
 
