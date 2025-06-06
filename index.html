@@ -23,13 +23,13 @@
       opacity: 1;
     }
     #logo {
-  position: absolute;
-  top: 0px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 300px;
-  z-index: 1;
-}
+      position: absolute;
+      top: 0px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 300px;
+      z-index: 1;
+    }
     #start-button {
       position: absolute;
       bottom: 20px;
@@ -45,16 +45,16 @@
       z-index: 1;
     }
     #game-screen, #result-screen {
-  display: none;
-  position: absolute;
-  top: 0; left: 0;
-  width: 100vw; height: 100vh;
-  background-color: rgba(0, 0, 0, 0.9);
-  color: white;
-  padding: 20px;
-  box-sizing: border-box;
-  z-index: 2;
-}
+      display: none;
+      position: absolute;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background-color: rgba(0, 0, 0, 0.9);
+      color: white;
+      padding: 20px;
+      box-sizing: border-box;
+      z-index: 2;
+    }
     .text-block {
       text-align: center;
       margin-top: 100px;
@@ -88,16 +88,21 @@
   </style>
 </head>
 <body>
-  <video id="bg-video" loop autoplay><source src="bg_video.mp4" type="video/mp4" /></video>
+  <video id="bg-video" loop muted autoplay playsinline>
+    <source src="bg_video.mp4" type="video/mp4" />
+  </video>
+  <audio id="bgm" loop>
+    <source src="game_bgm.mp3" type="audio/mpeg" />
+  </audio>
   <img id="logo" src="logo.jpg" alt="ロゴ" />
   <button id="start-button" onclick="startGame()">視聴開始</button>
 
   <div id="game-screen">
-  <div id="subscriber-box" style="position: absolute; top: 20px; right: 20px; text-align: right;">
-    <div id="subscriber-count">登録者数: 499000</div>
-    <button id="unsubscribe-button" onclick="unsubscribe()" style="margin-top: 8px; padding: 6px 12px; font-size: 14px; border: none; background: red; color: white; border-radius: 5px; cursor: pointer;">登録解除</button>
-  </div>
-  <div id="warning" style="position: absolute; top: 40px; left: 50%; transform: translateX(-50%); font-size: 28px; color: red; font-weight: bold; display: none;">登録解除しろ！</div>
+    <div id="subscriber-box" style="position: absolute; top: 20px; right: 20px; text-align: right;">
+      <div id="subscriber-count">登録者数: 499000</div>
+      <button id="unsubscribe-button" onclick="unsubscribe()" style="margin-top: 8px; padding: 6px 12px; font-size: 14px; border: none; background: red; color: white; border-radius: 5px; cursor: pointer;">登録解除</button>
+    </div>
+    <div id="warning" style="position: absolute; top: 40px; left: 50%; transform: translateX(-50%); font-size: 28px; color: red; font-weight: bold; display: none;">登録解除しろ！</div>
     <div class="text-block">
       <p id="kanji"></p>
       <div id="typed-area"></div>
@@ -113,42 +118,50 @@
     </div>
   </div>
 
+  <div id="gameover-screen" style="display: none; position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background: black; color: red; z-index: 3; text-align: center; padding-top: 20vh;">
+    <h1 style="font-size: 48px;">ゲームオーバー</h1>
+    <p>登録者が増えすぎたため終了しました。</p>
+    <button onclick="goToTitle()" style="margin-top: 20px; font-size: 18px; padding: 10px 20px; background: #ccc; border: none; border-radius: 8px; cursor: pointer;">タイトルへ戻る</button>
+  </div>
+
   <script>
     const texts = [
       ['飽きた', 'akita'],
-      ['もう飽きてたわ', 'mouakitetawa'],
+      ['正直のばまんより面白い実況者いるやろ', 'shoujikino bamanyoriomoshirojikkyoushairoyaro'],
       ['同じようなネタばっか', 'onajiyounanetabakka'],
       ['大量生産コンテンツ', 'tairyouseisankontentsu']
     ];
 
     let index = 0, correct = 0, total = 0, subscriberCount = 499000;
-    let gameTimer;
+    let gameTimer, subscriberInterval;
+
+    const video = document.getElementById('bg-video');
+    document.addEventListener('DOMContentLoaded', () => {
+      video.play().catch(() => {});
+    });
 
     function startGame() {
-  document.getElementById('start-button').style.display = 'none';
-  document.getElementById('logo').style.display = 'none';
-  document.getElementById('game-screen').style.display = 'block';
-  document.getElementById('subscriber-count').innerText = `登録者数: ${subscriberCount}`;
-  renderText();
-  gameTimer = setTimeout(showResult, 30000);
-  subscriberInterval = setInterval(() => {
-    const delta = Math.floor(Math.random() * 101) + 100;
-    subscriberCount += delta;
-    document.getElementById('subscriber-count').innerText = `登録者数: ${subscriberCount}`;
-    if (subscriberCount >= 500000) document.getElementById('warning').style.display = 'block';
-    if (subscriberCount >= 501000) {
+      document.getElementById('start-button').style.display = 'none';
+      document.getElementById('logo').style.display = 'none';
+      document.getElementById('game-screen').style.display = 'block';
+      document.getElementById('subscriber-count').innerText = `登録者数: ${subscriberCount}`;
+      document.getElementById('bgm').play();
+      renderText();
+      gameTimer = setTimeout(showResult, 30000);
+      subscriberInterval = setInterval(() => {
+        const delta = Math.floor(Math.random() * 101) + 100;
+        subscriberCount += delta;
+        document.getElementById('subscriber-count').innerText = `登録者数: ${subscriberCount}`;
+        if (subscriberCount >= 500000) document.getElementById('warning').style.display = 'block';
+        if (subscriberCount >= 501000) {
+          clearInterval(subscriberInterval);
           showGameOver();
-          return;
-      clearInterval(subscriberInterval);
-      showResult();
+        }
+      }, 1000);
     }
-  }, 1000);
-}
 
     function renderText() {
-      if (index >= texts.length) {
-        index = 0;
-      }
+      if (index >= texts.length) index = 0;
       document.getElementById('kanji').innerText = texts[index][0];
       document.getElementById('typed-area').innerHTML = '';
       document.getElementById('input').value = '';
@@ -159,21 +172,15 @@
       const input = document.getElementById('input').value.toLowerCase();
       const target = texts[index][1];
       const typedArea = document.getElementById('typed-area');
-
       let html = '';
       for (let i = 0; i < target.length; i++) {
         if (i < input.length) {
-          if (input[i] === target[i]) {
-            html += `<span style='color: lightgreen;'>${target[i]}</span>`;
-          } else {
-            html += `<span style='color: red;'>${target[i]}</span>`;
-          }
+          html += `<span style='color: ${input[i] === target[i] ? 'lightgreen' : 'red'};'>${target[i]}</span>`;
         } else {
           html += `<span style='color: gray;'>${target[i]}</span>`;
         }
       }
       typedArea.innerHTML = html;
-
       if (input === target) {
         correct++;
         total++;
@@ -182,34 +189,28 @@
       }
     }
 
-    function showResult() {
-  clearTimeout(gameTimer);
-  clearInterval(subscriberInterval);
-  document.getElementById('game-screen').style.display = 'none';
-  document.getElementById('result-screen').style.display = 'block';
-  const totalTyped = total > 0 ? total : 1;
-  const ratio = correct / totalTyped;
-  let rank = 'D';
-  if (ratio >= 0.9) rank = 'S';
-  else if (ratio >= 0.75) rank = 'A';
-  else if (ratio >= 0.5) rank = 'B';
-  else if (ratio >= 0.3) rank = 'C';
-  document.getElementById('result-text').innerText = `正答数: ${correct} / ${totalTyped}`;
-  document.getElementById('result-rank').innerText = `ランク: ${rank}`;
-}
-
     function unsubscribe() {
       const delta = Math.floor(Math.random() * 101) + 100;
       subscriberCount -= delta;
       if (subscriberCount < 0) subscriberCount = 0;
       document.getElementById('subscriber-count').innerText = `登録者数: ${subscriberCount}`;
-      if (subscriberCount < 500000) document.getElementById('warning').style.display = 'none';
+      if (subscriberCount < 500000) {
+        document.getElementById('warning').style.display = 'none';
+      }
     }
 
-    function goToTitle() {
-      location.reload();
+    function showResult() {
+      clearTimeout(gameTimer);
+      clearInterval(subscriberInterval);
+      document.getElementById('game-screen').style.display = 'none';
+      document.getElementById('result-screen').style.display = 'block';
+      const totalTyped = total > 0 ? total : 1;
+      const ratio = correct / totalTyped;
+      const rank = ratio >= 0.9 ? 'S' : ratio >= 0.75 ? 'A' : ratio >= 0.5 ? 'B' : ratio >= 0.3 ? 'C' : 'D';
+      document.getElementById('result-text').innerText = `正答数: ${correct} / ${totalTyped}`;
+      document.getElementById('result-rank').innerText = `ランク: ${rank}`;
     }
-  
+
     function showGameOver() {
       clearTimeout(gameTimer);
       clearInterval(subscriberInterval);
@@ -218,12 +219,9 @@
       document.getElementById('gameover-screen').style.display = 'block';
     }
 
+    function goToTitle() {
+      location.reload();
+    }
   </script>
-
-  <div id="gameover-screen" style="display: none; position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background: black; color: red; z-index: 3; text-align: center; padding-top: 20vh;">
-    <h1 style="font-size: 48px;">ゲームオーバー</h1>
-    <p>登録者が増えすぎたため終了しました。</p>
-    <button onclick="goToTitle()" style="margin-top: 20px; font-size: 18px; padding: 10px 20px; background: #ccc; border: none; border-radius: 8px; cursor: pointer;">タイトルへ戻る</button>
-  </div>
 </body>
 </html>
