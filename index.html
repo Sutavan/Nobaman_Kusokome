@@ -137,6 +137,8 @@
     document.getElementById('subscriber-count').innerText = `登録者数: ${subscriberCount}`;
     if (subscriberCount >= 500000) document.getElementById('warning').style.display = 'block';
     if (subscriberCount >= 501000) {
+          showGameOver();
+          return;
       clearInterval(subscriberInterval);
       showResult();
     }
