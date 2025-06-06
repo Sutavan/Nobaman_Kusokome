@@ -132,7 +132,7 @@
       ['大量生産コンテンツ', 'tairyouseisankontentsu']
     ];
 
-    let index = 0, correct = 0, total = 0, subscriberCount = 499000;
+    let index = 0, correct = 0, total = 0, charCorrect = 0, charTotal = 0, subscriberCount = 499000;
     let gameTimer, subscriberInterval;
 
     const video = document.getElementById('bg-video');
@@ -141,6 +141,7 @@
     });
 
     function startGame() {
+      index = 0; correct = 0; total = 0; charCorrect = 0; charTotal = 0;
       document.getElementById('start-button').style.display = 'none';
       document.getElementById('logo').style.display = 'none';
       document.getElementById('game-screen').style.display = 'block';
@@ -172,16 +173,22 @@
       const input = document.getElementById('input').value.toLowerCase();
       const target = texts[index][1];
       const typedArea = document.getElementById('typed-area');
+      charTotal += target.length;
       let html = '';
+      let matched = true;
       for (let i = 0; i < target.length; i++) {
         if (i < input.length) {
-          html += `<span style='color: ${input[i] === target[i] ? 'lightgreen' : 'red'};'>${target[i]}</span>`;
+          const match = input[i] === target[i];
+          if (match) charCorrect++;
+          html += `<span style='color: ${match ? 'lightgreen' : 'red'};'>${target[i]}</span>`;
+          if (!match) matched = false;
         } else {
           html += `<span style='color: gray;'>${target[i]}</span>`;
+          matched = false;
         }
       }
       typedArea.innerHTML = html;
-      if (input === target) {
+      if (matched && input.length === target.length) {
         correct++;
         total++;
         index++;
@@ -204,10 +211,9 @@
       clearInterval(subscriberInterval);
       document.getElementById('game-screen').style.display = 'none';
       document.getElementById('result-screen').style.display = 'block';
-      const totalTyped = total > 0 ? total : 1;
-      const ratio = correct / totalTyped;
+      const ratio = charTotal > 0 ? (charCorrect / charTotal) : 0;
       const rank = ratio >= 0.9 ? 'S' : ratio >= 0.75 ? 'A' : ratio >= 0.5 ? 'B' : ratio >= 0.3 ? 'C' : 'D';
-      document.getElementById('result-text').innerText = `正答数: ${correct} / ${totalTyped}`;
+      document.getElementById('result-text').innerText = `正答率: ${(ratio * 100).toFixed(1)}%`;
       document.getElementById('result-rank').innerText = `ランク: ${rank}`;
     }
 
