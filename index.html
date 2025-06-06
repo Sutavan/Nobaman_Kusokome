@@ -1,1 +1,152 @@
-（すでにCanvasにある漢字入力対応のHTML。ここでは省略）
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>のばまんにクソコメを送るゲーム</title>
+  <style>
+    body { margin: 0; background-color: black; overflow: hidden; font-family: sans-serif; color: white; }
+    #bg-video { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 60%; height: auto; z-index: -1; opacity: 1; }
+    #logo { position: absolute; bottom: 100px; right: 20px; width: 220px; z-index: 1; }
+    #start-button { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); padding: 12px 24px; font-size: 18px; background-color: #ff0000; color: white; border: none; cursor: pointer; border-radius: 8px; z-index: 1; }
+    #audio-toggle { position: absolute; top: 10px; left: 10px; z-index: 5; font-size: 14px; }
+    #game-screen, #result-screen, #gameover-screen {
+      display: none; position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
+      background-color: rgba(0, 0, 0, 0.75); color: white; padding: 20px; box-sizing: border-box; z-index: 2;
+    }
+    .text-block { text-align: center; margin-top: 100px; }
+    .text-block p { margin: 8px 0; }
+    #hiragana { font-size: 20px; opacity: 0.6; }
+    #kanji { font-size: 28px; font-weight: bold; }
+    #subscriber-box { position: absolute; top: 20px; right: 20px; text-align: right; }
+    #unsubscribe-button {
+      margin-top: 8px; padding: 6px 12px; font-size: 14px;
+      border: none; background: red; color: white; border-radius: 5px; cursor: pointer;
+    }
+    #warning {
+      position: absolute; top: 40px; left: 50%;
+      transform: translateX(-50%); font-size: 28px; color: red; font-weight: bold; display: none;
+    }
+    #input { width: 80%; font-size: 18px; margin-top: 20px; }
+    #result-rank { font-size: 32px; font-weight: bold; margin-top: 20px; }
+    #back-button {
+      margin-top: 30px; font-size: 18px; padding: 10px 20px;
+      background: #ccc; border: none; border-radius: 8px; cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <video autoplay loop id="bg-video"><source src="bg_video.mp4" type="video/mp4" /></video>
+  <audio id="bgm" loop><source src="bg_video.mp4" type="video/mp4" /></audio>
+  <audio id="gamebgm" loop><source src="game_bgm.mp3" type="audio/mp3" /></audio>
+
+  <button id="audio-toggle" onclick="toggleAudio()">音声オン</button>
+  <img id="logo" src="logo.jpg" alt="ロゴ" />
+  <button id="start-button" onclick="startGame()">視聴開始</button>
+
+  <div id="game-screen">
+    <div id="subscriber-box">
+      <div id="subscriber-count">登録者数: 499000</div>
+      <button id="unsubscribe-button" onclick="unsubscribe()">登録解除</button>
+    </div>
+    <div id="warning">登録解除しろ！</div>
+    <div class="text-block">
+      <p id="kanji"></p>
+      <p id="hiragana"></p>
+      <input type="text" id="input" oninput="checkInput()" />
+    </div>
+  </div>
+
+  <div id="result-screen">
+    <div class="text-block">
+      <div id="result-text"></div>
+      <div id="result-rank"></div>
+      <button id="back-button" onclick="goToTitle()">タイトルへ戻る</button>
+    </div>
+  </div>
+
+  <div id="gameover-screen">
+    <div class="text-block">
+      <div style="font-size: 28px; color: red;">50万人到達してしまった！ゲームオーバー！</div>
+      <button id="back-button" onclick="goToTitle()">タイトルへ戻る</button>
+    </div>
+  </div>
+
+  <script>
+    const texts = [
+      ['もうあきてたわ', 'もう飽きてたわ'],
+      ['おなじようなねたばっか', '同じようなネタばっか'],
+      ['あきた', '飽きた'],
+      ['たいりょうせいさんこんてんつ', '大量生産コンテンツ']
+    ];
+    let index = 0, subscriberCount = 499000, correct = 0, total = 0, intervalId, subscriberInterval;
+    const bgm = document.getElementById('bgm'), gamebgm = document.getElementById('gamebgm'); let audioOn = true;
+
+    function toggleAudio() {
+      audioOn = !audioOn;
+      document.getElementById('audio-toggle').innerText = audioOn ? '音声オフ' : '音声オン';
+      bgm.muted = !audioOn; gamebgm.muted = !audioOn;
+      if (audioOn && document.getElementById('game-screen').style.display !== 'block') bgm.play(); else bgm.pause();
+    }
+
+    function startGame() {
+      document.getElementById('start-button').style.display = 'none';
+      document.getElementById('logo').style.display = 'none';
+      document.getElementById('game-screen').style.display = 'block';
+      bgm.pause(); gamebgm.currentTime = 0; if (audioOn) gamebgm.play();
+      renderText();
+      intervalId = setInterval(() => { index = (index + 1) % texts.length; renderText(); }, 4000);
+      subscriberInterval = setInterval(() => {
+        const delta = Math.floor(Math.random() * 101) + 100;
+        subscriberCount += delta;
+        document.getElementById('subscriber-count').innerText = `登録者数: ${subscriberCount}`;
+        if (subscriberCount >= 500000) document.getElementById('warning').style.display = 'block';
+        if (subscriberCount >= 501000) {
+          clearInterval(intervalId); clearInterval(subscriberInterval); gamebgm.pause();
+          document.getElementById('game-screen').style.display = 'none';
+          document.getElementById('gameover-screen').style.display = 'block';
+          if (audioOn) bgm.play();
+        }
+      }, 1000);
+      setTimeout(() => { clearInterval(intervalId); clearInterval(subscriberInterval); showResult(); }, 60000);
+    }
+
+    function renderText() {
+      const t = texts[index];
+      document.getElementById('hiragana').innerText = `(${t[0]})`;
+      document.getElementById('kanji').innerText = t[1];
+      document.getElementById('input').value = '';
+    }
+
+    function checkInput() {
+      const input = document.getElementById('input').value.trim();
+      const target = texts[index][1];
+      const inputField = document.getElementById('input');
+      if (input === target) { inputField.style.backgroundColor = 'lightgreen'; correct++; } 
+      else { inputField.style.backgroundColor = 'salmon'; }
+      total++;
+    }
+
+    function unsubscribe() {
+      const delta = Math.floor(Math.random() * 101) + 100;
+      subscriberCount -= delta;
+      if (subscriberCount < 0) subscriberCount = 0;
+      document.getElementById('subscriber-count').innerText = `登録者数: ${subscriberCount}`;
+      if (subscriberCount < 500000) document.getElementById('warning').style.display = 'none';
+    }
+
+    function showResult() {
+      gamebgm.pause(); if (audioOn) bgm.play();
+      document.getElementById('game-screen').style.display = 'none';
+      document.getElementById('result-screen').style.display = 'block';
+      const accuracy = total > 0 ? correct / total : 0;
+      let rank = 'D'; if (accuracy >= 0.9) rank = 'S'; else if (accuracy >= 0.75) rank = 'A'; else if (accuracy >= 0.5) rank = 'B'; else if (accuracy >= 0.3) rank = 'C';
+      document.getElementById('result-text').innerText = `正答率: ${(accuracy * 100).toFixed(1)}%`;
+      document.getElementById('result-rank').innerText = `ランク: ${rank}`;
+    }
+
+    function goToTitle() { location.reload(); }
+  </script>
+</body>
+</html>
