@@ -2,210 +2,78 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>のばまんにクソコメを送るゲーム</title>
   <style>
     body {
       margin: 0;
-      background-color: black;
-      overflow: hidden;
-      position: relative;
       font-family: sans-serif;
+      background-color: black;
       color: white;
+      overflow: hidden;
     }
-    #background-video-wrapper {
+    #background {
       position: fixed;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
       width: 60vw;
-      height: auto;
       z-index: -1;
     }
     video {
       width: 100%;
       height: auto;
-      object-fit: contain;
     }
     #logo {
       position: absolute;
       bottom: 80px;
       right: 20px;
       width: 180px;
-      z-index: 2;
-    }
-    #start-button {
-      position: absolute;
-      bottom: 20px;
-      right: 20px;
-      padding: 12px 24px;
-      font-size: 18px;
-      background-color: white;
-      color: black;
-      border: none;
-      cursor: pointer;
-      border-radius: 8px;
-      z-index: 2;
-    }
-    #start-button:hover {
-      background-color: #ccc;
-    }
-    #audio-toggle {
-      position: absolute;
-      top: 20px;
-      left: 20px;
-      padding: 6px 12px;
-      font-size: 14px;
-      background-color: white;
-      color: black;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      z-index: 2;
-    }
-    #game-screen {
-      display: none;
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background-color: rgba(0, 0, 0, 0.6);
-      color: white;
-      padding: 20px;
-      box-sizing: border-box;
       z-index: 1;
     }
-    .text-block {
-      text-align: center;
-      margin-top: 100px;
-    }
-    .text-block p {
-      font-size: 24px;
-      margin: 8px 0;
-    }
-    #subscriber-box {
+    #start-button, #audio-button {
       position: absolute;
-      top: 20px;
-      right: 20px;
-      text-align: right;
-    }
-    #unsubscribe-button {
-      display: block;
-      margin-top: 8px;
-      padding: 6px 12px;
-      font-size: 14px;
+      padding: 12px 24px;
+      font-size: 18px;
+      background: white;
+      color: black;
       border: none;
-      background: red;
-      color: white;
-      border-radius: 5px;
+      border-radius: 8px;
       cursor: pointer;
+      z-index: 2;
     }
+    #start-button { bottom: 20px; right: 20px; }
+    #audio-button { top: 20px; left: 20px; }
   </style>
 </head>
 <body>
-  <div id="background-video-wrapper">
+  <div id="background">
     <video id="bg-video" autoplay loop muted>
-      <source src="./トプ画絵.mp4" type="video/mp4">
-      お使いのブラウザは動画タグに対応していません。
+      <source src="./トプ画絵_音声付き軽量版.mp4" type="video/mp4">
     </video>
   </div>
-  <img id="logo" src="./のばまんロゴ.jpg" alt="のばまんロゴ">
-  <button id="start-button" onclick="startGame()">視聴開始</button>
-  <button id="audio-toggle" onclick="toggleAudio()">音声ON</button>
 
-  <div id="game-screen">
-    <div id="subscriber-box">
-      <div id="subscriber-count">登録者数: 49900</div>
-      <div id="alert" style="color: red; font-weight: bold;"></div>
-      <button id="unsubscribe-button" onclick="unsubscribe()">登録解除</button>
-    </div>
-    <div class="text-block">
-      <p id="hiragana"></p>
-      <p id="kanji"></p>
-      <p id="romaji"></p>
-    </div>
-  </div>
+  <img id="logo" src="./のばまんロゴ.jpg" alt="のばまんロゴ">
+  <button id="start-button">視聴開始</button>
+  <button id="audio-button">音声ON</button>
 
   <script>
-    const texts = [
-      ['もうあきてたわ', 'もう飽きてたわ', 'mou akitetawa'],
-      ['おなじようなねたばっか', '同じようなネタばっか', 'onajiyouna neta bakka'],
-      ['あきた', '飽きた', 'akita'],
-      ['りんりてきにあうとおぶがんちゅうやな', '倫理的にアウトオブ眼中やな', 'rinritekini auto obu ganchuu yana'],
-      ['これもうほらーげーむだろ', 'これもうホラーゲームだろ', 'kore mou horaa geemu daro'],
-      ['くりかえしのおおいこんてんつ', '繰り返しの多いコンテンツ', 'kurikaeshi no ooi kontentsu'],
-      ['いんたいまじかよ', '引退マジかよ', 'intai majikayo'],
-      ['まさかえんじょうか？', 'まさか炎上か？', 'masaka enjou ka?'],
-      ['たいりょうせいさんこんてんつ', '大量生産コンテンツ', 'tairyouseisan kontentsu']
-    ];
+    const bgVideo = document.getElementById('bg-video');
+    const startButton = document.getElementById('start-button');
+    const audioButton = document.getElementById('audio-button');
 
-    let index = 0;
-    let subscriberCount = 49900;
-    let intervalId;
-    let subscriberInterval;
-    let bgVideo = document.getElementById('bg-video');
-    let audioEnabled = false;
+    let audioOn = false;
 
-    function toggleAudio() {
-      audioEnabled = !audioEnabled;
-      bgVideo.muted = !audioEnabled;
-      document.getElementById('audio-toggle').innerText = audioEnabled ? '音声OFF' : '音声ON';
-    }
+    audioButton.onclick = () => {
+      audioOn = !audioOn;
+      bgVideo.muted = !audioOn;
+      audioButton.textContent = audioOn ? '音声OFF' : '音声ON';
+    };
 
-    function startGame() {
-      document.getElementById('start-button').style.display = 'none';
-      document.getElementById('logo').style.display = 'none';
-      document.getElementById('audio-toggle').style.display = 'none';
-      document.getElementById('game-screen').style.display = 'block';
-
-      intervalId = setInterval(() => {
-        index = (index + 1) % texts.length;
-        renderText();
-      }, 4000);
-
-      renderText();
-
-      subscriberInterval = setInterval(() => {
-        const delta = Math.floor(Math.random() * 91) + 10;
-        subscriberCount += delta;
-        document.getElementById('subscriber-count').innerText = `登録者数: ${subscriberCount}`;
-
-        if (subscriberCount > 500000) {
-          document.getElementById('alert').innerText = '下げろ！';
-        }
-        if (subscriberCount > 501000) {
-          clearInterval(subscriberInterval);
-          clearInterval(intervalId);
-          alert('50万人到達してしまった！ゲームオーバー！');
-          location.reload();
-        }
-      }, 1000);
-
-      setTimeout(() => {
-        clearInterval(subscriberInterval);
-        clearInterval(intervalId);
-        alert('タイムアップ！');
-        location.reload();
-      }, 60000);
-    }
-
-    function renderText() {
-      document.getElementById('hiragana').innerText = texts[index][0];
-      document.getElementById('kanji').innerText = texts[index][1];
-      document.getElementById('romaji').innerText = texts[index][2];
-    }
-
-    function unsubscribe() {
-      const delta = Math.floor(Math.random() * 91) + 10;
-      subscriberCount -= delta;
-      if (subscriberCount < 0) subscriberCount = 0;
-      document.getElementById('subscriber-count').innerText = `登録者数: ${subscriberCount}`;
-      if (subscriberCount < 500000) {
-        document.getElementById('alert').innerText = '';
-      }
-    }
+    startButton.onclick = () => {
+      alert('ゲーム開始（ここに本編遷移を後で実装）');
+    };
   </script>
 </body>
 </html>
