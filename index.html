@@ -209,6 +209,21 @@
     function goToTitle() {
       location.reload();
     }
+  
+    function showGameOver() {
+      clearTimeout(gameTimer);
+      clearInterval(subscriberInterval);
+      document.getElementById('game-screen').style.display = 'none';
+      document.getElementById('result-screen').style.display = 'none';
+      document.getElementById('gameover-screen').style.display = 'block';
+    }
+
   </script>
+
+  <div id="gameover-screen" style="display: none; position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background: black; color: red; z-index: 3; text-align: center; padding-top: 20vh;">
+    <h1 style="font-size: 48px;">ゲームオーバー</h1>
+    <p>登録者が増えすぎたため終了しました。</p>
+    <button onclick="goToTitle()" style="margin-top: 20px; font-size: 18px; padding: 10px 20px; background: #ccc; border: none; border-radius: 8px; cursor: pointer;">タイトルへ戻る</button>
+  </div>
 </body>
 </html>
