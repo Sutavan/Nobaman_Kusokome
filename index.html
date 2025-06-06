@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -13,15 +12,15 @@
       font-family: sans-serif;
       color: white;
     }
-    video {
-      position: fixed;
-      top: 0;
-      left: 0;
-      min-width: 100%;
-      min-height: 100%;
-      object-fit: cover;
+    #bg-video {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 60%;
+      height: auto;
       z-index: -1;
-      opacity: 0.4;
+      opacity: 1;
     }
     #logo {
       position: absolute;
@@ -44,8 +43,12 @@
       border-radius: 8px;
       z-index: 1;
     }
-    #start-button:hover {
-      background-color: #cc0000;
+    #audio-toggle {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 5;
+      font-size: 14px;
     }
     #game-screen, #result-screen, #gameover-screen {
       display: none;
@@ -94,6 +97,11 @@
       font-weight: bold;
       display: none;
     }
+    #input {
+      width: 80%;
+      font-size: 18px;
+      margin-top: 20px;
+    }
     #result-rank {
       font-size: 32px;
       font-weight: bold;
@@ -113,18 +121,21 @@
 <body>
   <video autoplay loop muted id="bg-video">
     <source src="bg_video.mp4" type="video/mp4" />
-    お使いのブラウザは動画に対応していません。
   </video>
   <audio id="bgm" loop>
+    <source src="bg_video.mp4" type="video/mp4" />
+  </audio>
+  <audio id="gamebgm" loop>
     <source src="game_bgm.mp3" type="audio/mp3" />
   </audio>
 
+  <button id="audio-toggle" onclick="toggleAudio()">音声オフ</button>
   <img id="logo" src="logo.jpg" alt="ロゴ" />
   <button id="start-button" onclick="startGame()">視聴開始</button>
 
   <div id="game-screen">
     <div id="subscriber-box">
-      <div id="subscriber-count">登録者数: 49900</div>
+      <div id="subscriber-count">登録者数: 499000</div>
       <button id="unsubscribe-button" onclick="unsubscribe()">登録解除</button>
     </div>
     <div id="warning">登録解除しろ！</div>
@@ -132,7 +143,7 @@
       <p id="hiragana"></p>
       <p id="kanji"></p>
       <p id="romaji"></p>
-      <input type="text" id="input" oninput="checkInput()" style="width: 80%; font-size: 18px; margin-top: 20px;" />
+      <input type="text" id="input" oninput="checkInput()" />
     </div>
   </div>
 
@@ -156,26 +167,31 @@
       ['もうあきてたわ', 'もう飽きてたわ', 'mou akitetawa'],
       ['おなじようなねたばっか', '同じようなネタばっか', 'onajiyouna neta bakka'],
       ['あきた', '飽きた', 'akita'],
-      ['りんりてきにあうとおぶがんちゅうやな', '倫理的にアウトオブ眼中やな', 'rinritekini auto obu ganchuu yana'],
-      ['これもうほらーげーむだろ', 'これもうホラーゲームだろ', 'kore mou horaa geemu daro'],
-      ['くりかえしのおおいこんてんつ', '繰り返しの多いコンテンツ', 'kurikaeshi no ooi kontentsu'],
-      ['いんたいまじかよ', '引退マジかよ', 'intai majikayo'],
-      ['まさかえんじょうか？', 'まさか炎上か？', 'masaka enjou ka?'],
-      ['たいりょうせいさんこんてんつ', '大量生産コンテンツ', 'tairyouseisan kontentsu']
+      ['りんりてきにあうとおぶがんちゅうやな', '倫理的にアウトオブ眼中やな', 'rinritekini auto obu ganchuu yana']
     ];
-
     let index = 0;
-    let subscriberCount = 49900;
+    let subscriberCount = 499000;
     let correct = 0;
     let total = 0;
     let intervalId, subscriberInterval;
     const bgm = document.getElementById('bgm');
+    const gamebgm = document.getElementById('gamebgm');
+    let audioOn = true;
+
+    function toggleAudio() {
+      audioOn = !audioOn;
+      document.getElementById('audio-toggle').innerText = audioOn ? '音声オフ' : '音声オン';
+      bgm.muted = !audioOn;
+      gamebgm.muted = !audioOn;
+    }
 
     function startGame() {
       document.getElementById('start-button').style.display = 'none';
       document.getElementById('logo').style.display = 'none';
       document.getElementById('game-screen').style.display = 'block';
-      bgm.play();
+      bgm.pause();
+      gamebgm.currentTime = 0;
+      if (audioOn) gamebgm.play();
 
       renderText();
       intervalId = setInterval(() => {
@@ -184,18 +200,17 @@
       }, 4000);
 
       subscriberInterval = setInterval(() => {
-        const delta = Math.floor(Math.random() * 91) + 10;
+        const delta = Math.floor(Math.random() * 101) + 100;
         subscriberCount += delta;
         document.getElementById('subscriber-count').innerText = `登録者数: ${subscriberCount}`;
-        if (subscriberCount >= 500000) {
-          document.getElementById('warning').style.display = 'block';
-        }
+        if (subscriberCount >= 500000) document.getElementById('warning').style.display = 'block';
         if (subscriberCount >= 501000) {
           clearInterval(intervalId);
           clearInterval(subscriberInterval);
-          bgm.pause();
+          gamebgm.pause();
           document.getElementById('game-screen').style.display = 'none';
           document.getElementById('gameover-screen').style.display = 'block';
+          if (audioOn) bgm.play();
         }
       }, 1000);
 
@@ -215,29 +230,32 @@
     }
 
     function checkInput() {
-      const input = document.getElementById('input').value;
+      const input = document.getElementById('input').value.trim();
       const target = texts[index][2];
       total++;
-      if (input.trim() === target) {
-        correct++;
+      const inputField = document.getElementById('input');
+      if (target.startsWith(input)) {
+        inputField.style.backgroundColor = 'lightgreen';
+        if (input === target) correct++;
+      } else {
+        inputField.style.backgroundColor = 'salmon';
       }
     }
 
     function unsubscribe() {
-      const delta = Math.floor(Math.random() * 91) + 10;
+      const delta = Math.floor(Math.random() * 101) + 100;
       subscriberCount -= delta;
       if (subscriberCount < 0) subscriberCount = 0;
       document.getElementById('subscriber-count').innerText = `登録者数: ${subscriberCount}`;
-      if (subscriberCount < 500000) {
-        document.getElementById('warning').style.display = 'none';
-      }
+      if (subscriberCount < 500000) document.getElementById('warning').style.display = 'none';
     }
 
     function showResult() {
-      bgm.pause();
+      gamebgm.pause();
+      if (audioOn) bgm.play();
       document.getElementById('game-screen').style.display = 'none';
       document.getElementById('result-screen').style.display = 'block';
-      const accuracy = correct / total;
+      const accuracy = total > 0 ? correct / total : 0;
       let rank = 'D';
       if (accuracy >= 0.9) rank = 'S';
       else if (accuracy >= 0.75) rank = 'A';
